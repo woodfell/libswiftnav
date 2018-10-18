@@ -6,6 +6,7 @@ include(ClangTools)
 include(FindCheck)
 
 set(MAX_CHANNELS "63" CACHE STRING "Maximum number of concurrent GNSS channels to support.")
+set(STARLING_MAX_CHANNEL_COUNT "150" CACHE STRING "Maximum number of input GNSS channels.")
 configure_file(src/max_channels.h.in max_channels.h)
 
 set(HDRS
