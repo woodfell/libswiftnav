@@ -163,6 +163,7 @@ typedef struct {
 } glo_time_t;
 
 #define GPS_TIME_UNKNOWN ((gps_time_t){TOW_UNKNOWN, WN_UNKNOWN})
+#define GPS_TIME_START ((gps_time_t){0, 0})
 
 /** IS-GPS-200H Table 20-IX: 602112 [s] */
 #define GPS_LNAV_UTC_MAX_TOT 602112
