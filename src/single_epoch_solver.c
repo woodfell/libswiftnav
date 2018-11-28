@@ -220,8 +220,7 @@ static void sagnac_rotation(const double sat_pos[static 3],
  * \return predicted Doppler in m/s
  */
 static double compute_predicted_doppler(
-    const double rx_state[static 8],
-    const navigation_measurement_t *nav_meas) {
+    const double rx_state[static 8], const navigation_measurement_t *nav_meas) {
   const double *user_pos = &rx_state[0];
   const double *user_vel = &rx_state[4];
   const double clock_drift_m_s = rx_state[7];
@@ -271,7 +270,7 @@ static s8 vel_solve(const u8 n_used,
       /* If any signal lacks valid Doppler, do not compute velocity.
        * (Currently either all signals have Doppler or none do, in case of
        * base station measurements) */
-      memset(&(lsq_data->rx_state[4]), 0, 4*sizeof(double));
+      memset(&(lsq_data->rx_state[4]), 0, 4 * sizeof(double));
       return -1;
     }
 
@@ -504,7 +503,7 @@ static s8 pvt_solve(const u8 n_used,
 
   if (disable_velocity) {
     /* No velocity solution */
-    memset(&(lsq_data->rx_state[4]), 0, 4*sizeof(double));
+    memset(&(lsq_data->rx_state[4]), 0, 4 * sizeof(double));
     memset(lsq_data->omp_doppler, 0, sizeof(lsq_data->omp_doppler));
   } else {
     /* Perform the velocity solution. */
@@ -568,8 +567,7 @@ static bool residual_test(const u8 n_used,
                           const lsq_data_t *lsq_data,
                           const navigation_measurement_t *nav_meas[n_used],
                           double *p_metric) {
-  if (lsq_data->rx_state[0] == 0.0 &&
-      lsq_data->rx_state[1] == 0.0 &&
+  if (lsq_data->rx_state[0] == 0.0 && lsq_data->rx_state[1] == 0.0 &&
       lsq_data->rx_state[2] == 0.0) {
     /* State un-initialized */
     return false;
@@ -1310,7 +1308,7 @@ s8 calc_PVT(const u8 n_used,
     soln->velocity_valid = 1;
   } else {
     soln->velocity_valid = 0;
-    memset(&(lsq_data.rx_state[4]), 0, 4*sizeof(double));
+    memset(&(lsq_data.rx_state[4]), 0, 4 * sizeof(double));
   }
 
   if (ALL_CONSTELLATIONS != strategy && !disable_raim) {
