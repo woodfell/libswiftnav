@@ -1145,9 +1145,13 @@ bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b) {
 
   switch (sid_to_constellation(a->sid)) {
     case CONSTELLATION_GPS:
+    case CONSTELLATION_QZS:
+      /* make sure ephemerides match for GPS/QZSS (only 1 TGD) */
+      a->kepler.tgd.gal_s[1] = 0.0;
+      b->kepler.tgd.gal_s[1] = 0.0;
+      return ephemeris_kepler_equal(&a->kepler, &b->kepler);
     case CONSTELLATION_BDS:
     case CONSTELLATION_GAL:
-    case CONSTELLATION_QZS:
       return ephemeris_kepler_equal(&a->kepler, &b->kepler);
     case CONSTELLATION_SBAS:
       return ephemeris_xyz_equal(&a->xyz, &b->xyz);
