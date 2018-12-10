@@ -993,7 +993,6 @@ void decode_ephemeris(const u32 frame_words[3][8],
   log_debug_sid(e->sid, "Health bits = 0x%02" PRIx8, e->health_bits);
 
   /* t_gd: Word 7, bits 17-24 */
-  memset(&(k->tgd), 0, sizeof(k->tgd));
   k->tgd.gps_s =
       (s8)(frame_words[0][7 - 3] >> (30 - 24) & 0xFF) * GPS_LNAV_EPH_SF_TGD;
 
@@ -1146,9 +1145,6 @@ bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b) {
   switch (sid_to_constellation(a->sid)) {
     case CONSTELLATION_GPS:
     case CONSTELLATION_QZS:
-      /* make sure ephemerides match for GPS/QZSS (only 1 TGD) */
-      a->kepler.tgd.gal_s[1] = 0.0;
-      b->kepler.tgd.gal_s[1] = 0.0;
       return ephemeris_kepler_equal(&a->kepler, &b->kepler);
     case CONSTELLATION_BDS:
     case CONSTELLATION_GAL:
