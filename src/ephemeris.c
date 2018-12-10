@@ -993,7 +993,8 @@ void decode_ephemeris(const u32 frame_words[3][8],
   log_debug_sid(e->sid, "Health bits = 0x%02" PRIx8, e->health_bits);
 
   /* t_gd: Word 7, bits 17-24 */
-  k->tgd_gps_s =
+  memset(&(k->tgd), 0, sizeof(k->tgd));
+  k->tgd.gps_s =
       (s8)(frame_words[0][7 - 3] >> (30 - 24) & 0xFF) * GPS_LNAV_EPH_SF_TGD;
 
   /* iodc: Word 3, bits 23-24 and word 8, bits 1-8 */
@@ -1357,14 +1358,14 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       /* sat_clock_error = iono_free_clock_error - (f_1 / f)^2 * TGD. */
       frequency = sid_to_carr_freq(*sid);
       gamma = GPS_L1_HZ * GPS_L1_HZ / (frequency * frequency);
-      *tgd = eph->kepler.tgd_gps_s * gamma;
+      *tgd = eph->kepler.tgd.gps_s * gamma;
       return 0;
     case CONSTELLATION_BDS:
       if (CODE_BDS2_B1 == sid->code) {
-        *tgd = eph->kepler.tgd_bds_s[0];
+        *tgd = eph->kepler.tgd.bds_s[0];
         return 0;
       } else if (CODE_BDS2_B2 == sid->code) {
-        *tgd = eph->kepler.tgd_bds_s[1];
+        *tgd = eph->kepler.tgd.bds_s[1];
         return 0;
       } else {
         log_debug_sid(*sid, "TGD not applied for the signal");
@@ -1388,7 +1389,7 @@ s8 get_tgd_correction(const ephemeris_t *eph,
     case CONSTELLATION_QZS:
       /* As per QZSS ICD draft 1.5, all signals use the same unscaled Tgd and
        * inter-signal biases are applied separately */
-      *tgd = eph->kepler.tgd_qzss_s;
+      *tgd = eph->kepler.tgd.qzss_s;
       return 0;
     case CONSTELLATION_GAL:
       /* Galileo ICD chapter 5.1.5 */
@@ -1397,14 +1398,14 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       if (CODE_GAL_E5I == sid->code || CODE_GAL_E5Q == sid->code ||
           CODE_GAL_E5X == sid->code) {
         /* The first TGD correction is for the (E1,E5a) combination */
-        *tgd = gamma * eph->kepler.tgd_gal_s[0];
+        *tgd = gamma * eph->kepler.tgd.gal_s[0];
         return 0;
       } else if (CODE_GAL_E1B == sid->code || CODE_GAL_E1C == sid->code ||
                  CODE_GAL_E1X == sid->code || CODE_GAL_E7I == sid->code ||
                  CODE_GAL_E7Q == sid->code || CODE_GAL_E7X == sid->code) {
         /* The clock corrections from INAV are for the (E1,E5b) combination, so
          * use the matching group delay correction for all the other signals */
-        *tgd = gamma * eph->kepler.tgd_gal_s[1];
+        *tgd = gamma * eph->kepler.tgd.gal_s[1];
         return 0;
       } else {
         log_debug_sid(*sid, "TGD not applied for the signal");
