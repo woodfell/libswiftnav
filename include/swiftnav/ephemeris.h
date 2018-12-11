@@ -86,12 +86,12 @@ extern "C" {
 /** Structure containing the GPS ephemeris for one satellite. */
 typedef struct {
   union {
-    double gps_s;    /**< GPS TGD  */
-    double qzss_s;   /**< QZSS TGD */
-    float bds_s[2];  /**< tgd_bds_s[0] = BDS TGD1,
-                          tgd_bds_s[1] = BDS TGD2 */
-    float gal_s[2];  /**< tgd_gal_s[0] = GAL E5a/E1 BGD,
-                          tgd_gal_s[1] = GAL E5b/E1 BGD*/
+    double gps_s;   /**< GPS TGD  */
+    double qzss_s;  /**< QZSS TGD */
+    float bds_s[2]; /**< tgd_bds_s[0] = BDS TGD1,
+                         tgd_bds_s[1] = BDS TGD2 */
+    float gal_s[2]; /**< tgd_gal_s[0] = GAL E5a/E1 BGD,
+                         tgd_gal_s[1] = GAL E5b/E1 BGD*/
   } tgd;
   double crc;      /**< Amplitude of the cosine harmonic correction term
                         to the orbit radius [m] */
