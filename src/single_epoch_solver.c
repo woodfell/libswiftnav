@@ -143,7 +143,8 @@ static void calc_measurement_noises(const navigation_measurement_t *nav_meas,
     case CODE_GAL_E1X:
     case CODE_GAL_E7I:
     case CODE_GAL_E7Q:
-    case CODE_GAL_E7X
+    case CODE_GAL_E7X:
+    case CODE_GAL_E5I:
     case CODE_GAL_E5Q:
     case CODE_GAL_E5X:
       pseudorange_var = GAL_PSEUDORANGE_VARIANCE +
