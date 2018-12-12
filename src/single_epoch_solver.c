@@ -109,12 +109,15 @@ static void calc_measurement_noises(const navigation_measurement_t *nav_meas,
 
   switch ((s8)nav_meas->sid.code) {
     case CODE_GPS_L1CA:
+    case CODE_GPS_L1P:
       pseudorange_var = GPS_L1CA_PSEUDORANGE_VARIANCE +
                         PSEUDORANGE_CN0_COEFFICIENT * cn0_term +
                         PSEUDORANGE_ELE_COEFFICIENT * el_term * el_term;
       break;
 
     case CODE_GPS_L2CM:
+    case CODE_GPS_L2P:
+    case CODE_GPS_L2CL:
     case CODE_GPS_L5I:
       pseudorange_var = GPS_L2CM_PSEUDORANGE_VARIANCE +
                         PSEUDORANGE_CN0_COEFFICIENT * cn0_term +
@@ -136,8 +139,13 @@ static void calc_measurement_noises(const navigation_measurement_t *nav_meas,
       break;
 
     case CODE_GAL_E1B:
+    case CODE_GAL_E1C:
+    case CODE_GAL_E1X:
     case CODE_GAL_E7I:
-    case CODE_GAL_E5I:
+    case CODE_GAL_E7Q:
+    case CODE_GAL_E7X
+    case CODE_GAL_E5Q:
+    case CODE_GAL_E5X:
       pseudorange_var = GAL_PSEUDORANGE_VARIANCE +
                         PSEUDORANGE_CN0_COEFFICIENT * cn0_term +
                         PSEUDORANGE_ELE_COEFFICIENT * el_term * el_term;
@@ -145,7 +153,11 @@ static void calc_measurement_noises(const navigation_measurement_t *nav_meas,
 
     case CODE_QZS_L1CA:
     case CODE_QZS_L2CM:
+    case CODE_QZS_L2CL:
+    case CODE_QZS_L2CX:
     case CODE_QZS_L5I:
+    case CODE_QZS_L5Q:
+    case CODE_QZS_L5X:
       pseudorange_var = QZS_PSEUDORANGE_VARIANCE +
                         PSEUDORANGE_CN0_COEFFICIENT * cn0_term +
                         PSEUDORANGE_ELE_COEFFICIENT * el_term * el_term;
