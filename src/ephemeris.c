@@ -993,8 +993,11 @@ void decode_ephemeris(const u32 frame_words[3][8],
   log_debug_sid(e->sid, "Health bits = 0x%02" PRIx8, e->health_bits);
 
   /* t_gd: Word 7, bits 17-24 */
-  k->tgd.gps_s =
+  k->tgd.gps_s[0] =
       (s8)(frame_words[0][7 - 3] >> (30 - 24) & 0xFF) * GPS_LNAV_EPH_SF_TGD;
+  /* L1-L5 TGD has to be filled up with C-NAV as combination of L1-L2 TGD and
+   * ISC_L5 */
+  k->tgd.gps_s[1] = 0.0;
 
   /* iodc: Word 3, bits 23-24 and word 8, bits 1-8 */
   k->iodc = ((frame_words[0][3 - 3] >> (30 - 24) & 0x3) << 8) |
@@ -1358,7 +1361,7 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       /* sat_clock_error = iono_free_clock_error - (f_1 / f)^2 * TGD. */
       frequency = sid_to_carr_freq(*sid);
       gamma = GPS_L1_HZ * GPS_L1_HZ / (frequency * frequency);
-      *tgd = eph->kepler.tgd.gps_s * gamma;
+      *tgd = eph->kepler.tgd.gps_s[0] * gamma;
       return 0;
     case CONSTELLATION_BDS:
       if (CODE_BDS2_B1 == sid->code) {
@@ -1389,7 +1392,7 @@ s8 get_tgd_correction(const ephemeris_t *eph,
     case CONSTELLATION_QZS:
       /* As per QZSS ICD draft 1.5, all signals use the same unscaled Tgd and
        * inter-signal biases are applied separately */
-      *tgd = eph->kepler.tgd.qzss_s;
+      *tgd = eph->kepler.tgd.qzss_s[0];
       return 0;
     case CONSTELLATION_GAL:
       /* Galileo ICD chapter 5.1.5 */
