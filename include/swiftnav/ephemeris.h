@@ -213,7 +213,7 @@ float decode_ura_index(const u8 index);
 u32 get_ephemeris_iod_or_iodcrc(const ephemeris_t *eph);
 s8 get_tgd_correction(const ephemeris_t *eph,
                       const gnss_signal_t *sid,
-                      double *tgd);
+                      float *tgd);
 
 #ifdef __cplusplus
 } /* extern "C" */

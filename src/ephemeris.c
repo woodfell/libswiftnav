@@ -201,7 +201,7 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
   /* NOTE: toe should be in GPS time as well */
   double dt = gpsdifftime(t, &e->toe);
 
-  double tgd;
+  float tgd;
   if (get_tgd_correction(e, &e->sid, &tgd) != 0) {
     return -1;
   }
@@ -302,7 +302,7 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
   /* Seconds from clock data reference time (toc) */
   double dt = gpsdifftime(t, &k->toc);
 
-  double tgd;
+  float tgd;
   if (get_tgd_correction(e, &e->sid, &tgd) != 0) {
     return -1;
   }
@@ -846,22 +846,22 @@ u8 ephemeris_params_valid(const gps_time_t *bgn,
 #define URA_VALUE_TABLE_LEN 16
 
 static const float gps_ura_values[URA_VALUE_TABLE_LEN] = {
-    [0] = 2.0f,
-    [1] = 2.8f,
-    [2] = 4.0f,
-    [3] = 5.7f,
-    [4] = 8.0f,
-    [5] = 11.3f,
-    [6] = 16.0f,
-    [7] = 32.0f,
-    [8] = 64.0f,
-    [9] = 128.0f,
-    [10] = 256.0f,
-    [11] = 512.0f,
-    [12] = 1024.0f,
-    [13] = 2048.0f,
-    [14] = 4096.0f,
-    [15] = 6144.0f,
+        [0] = 2.0f,
+        [1] = 2.8f,
+        [2] = 4.0f,
+        [3] = 5.7f,
+        [4] = 8.0f,
+        [5] = 11.3f,
+        [6] = 16.0f,
+        [7] = 32.0f,
+        [8] = 64.0f,
+        [9] = 128.0f,
+        [10] = 256.0f,
+        [11] = 512.0f,
+        [12] = 1024.0f,
+        [13] = 2048.0f,
+        [14] = 4096.0f,
+        [15] = 6144.0f,
 };
 
 /** Convert a GPS URA index into a value.
@@ -1353,7 +1353,7 @@ u32 get_ephemeris_iod_or_iodcrc(const ephemeris_t *eph) {
  */
 s8 get_tgd_correction(const ephemeris_t *eph,
                       const gnss_signal_t *sid,
-                      double *tgd) {
+                      float *tgd) {
   double frequency, gamma;
   assert(sid_to_constellation(eph->sid) == sid_to_constellation(*sid));
   switch (sid_to_constellation(*sid)) {
@@ -1361,7 +1361,12 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       /* sat_clock_error = iono_free_clock_error - (f_1 / f)^2 * TGD. */
       frequency = sid_to_carr_freq(*sid);
       gamma = GPS_L1_HZ * GPS_L1_HZ / (frequency * frequency);
-      *tgd = eph->kepler.tgd.gps_s[0] * gamma;
+      if (CODE_GPS_L5I == sid->code || CODE_GPS_L5Q == sid->code ||
+          CODE_GPS_L5X == sid->code) {
+        *tgd = eph->kepler.tgd.gps_s[1] * gamma;
+      } else {
+        *tgd = eph->kepler.tgd.gps_s[0] * gamma;
+      }
       return 0;
     case CONSTELLATION_BDS:
       if (CODE_BDS2_B1 == sid->code) {
@@ -1391,8 +1396,16 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       return -1;
     case CONSTELLATION_QZS:
       /* As per QZSS ICD draft 1.5, all signals use the same unscaled Tgd and
-       * inter-signal biases are applied separately */
-      *tgd = eph->kepler.tgd.qzss_s[0];
+       * inter-signal biases are applied separately - it was however decided
+       * to take a Galileo-like approach with per-frequency-combination tgds */
+      frequency = sid_to_carr_freq(*sid);
+      gamma = QZS_L1_HZ * QZS_L1_HZ / (frequency * frequency);
+      if (CODE_QZS_L5I == sid->code || CODE_QZS_L5Q == sid->code ||
+          CODE_QZS_L5X == sid->code) {
+        *tgd = eph->kepler.tgd.gps_s[1] * gamma;
+      } else {
+        *tgd = eph->kepler.tgd.gps_s[0] * gamma;
+      }
       return 0;
     case CONSTELLATION_GAL:
       /* Galileo ICD chapter 5.1.5 */
