@@ -160,7 +160,8 @@ START_TEST(test_signal_properties) {
       {.sid = {.code = CODE_COUNT, .sat = 0}, .valid = false},
       {.sid = {.code = CODE_INVALID, .sat = 1}, .valid = false},
       {
-          .sid = {.code = CODE_GPS_L1CA, .sat = 0}, .valid = false,
+          .sid = {.code = CODE_GPS_L1CA, .sat = 0},
+          .valid = false,
       },
       {.sid = {.code = CODE_GPS_L1CA, .sat = 1},
        .valid = true,
@@ -184,7 +185,8 @@ START_TEST(test_signal_properties) {
        .str = "SBAS L1 138"},
       {.sid = {.code = CODE_SBAS_L1CA, .sat = 139}, .valid = false},
       {
-          .sid = {.code = CODE_GLO_L1OF, .sat = 0}, .valid = false,
+          .sid = {.code = CODE_GLO_L1OF, .sat = 0},
+          .valid = false,
       },
       {.sid = {.code = CODE_GLO_L1OF, .sat = 1},
        .valid = true,
@@ -194,7 +196,8 @@ START_TEST(test_signal_properties) {
        .str = "GLO L1OF 28"},
       {.sid = {.code = CODE_GLO_L1OF, .sat = 29}, .valid = false},
       {
-          .sid = {.code = CODE_GLO_L2OF, .sat = 0}, .valid = false,
+          .sid = {.code = CODE_GLO_L2OF, .sat = 0},
+          .valid = false,
       },
       {.sid = {.code = CODE_GLO_L2OF, .sat = 1},
        .valid = true,
@@ -373,17 +376,15 @@ START_TEST(test_signal_sid_to_carr_freq) {
       glo_map_set_slot_id(mesid, sat);
       sid = construct_sid(CODE_GLO_L2OF, sat);
       carr_freq = sid_to_carr_freq(sid);
-      fail_unless((GLO_L2_HZ +
-                   (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) * GLO_L2_DELTA_HZ) ==
-                      carr_freq,
+      fail_unless((GLO_L2_HZ + (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
+                                   GLO_L2_DELTA_HZ) == carr_freq,
                   "Glonass L2 carrier error");
       /* now L1 */
       mesid = construct_mesid(CODE_GLO_L1OF, fcn);
       sid = construct_sid(CODE_GLO_L1OF, sat);
       carr_freq = sid_to_carr_freq(sid);
-      fail_unless((GLO_L1_HZ +
-                   (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) * GLO_L1_DELTA_HZ) ==
-                      carr_freq,
+      fail_unless((GLO_L1_HZ + (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
+                                   GLO_L1_DELTA_HZ) == carr_freq,
                   "Glonass L1 carrier error");
     }
   }
@@ -414,18 +415,18 @@ START_TEST(test_signal_sid_to_lambda) {
       glo_map_set_slot_id(mesid, orb_slot);
       sid = construct_sid(CODE_GLO_L2OF, orb_slot);
       lambda = sid_to_lambda(sid);
-      fail_unless((GPS_C / (GLO_L2_HZ +
-                            (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
-                                GLO_L2_DELTA_HZ)) == lambda,
-                  "Glonass L2 wavelength error");
+      fail_unless(
+          (GPS_C / (GLO_L2_HZ + (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
+                                    GLO_L2_DELTA_HZ)) == lambda,
+          "Glonass L2 wavelength error");
       /* now L1 */
       mesid = construct_mesid(CODE_GLO_L1OF, fcn);
       sid = construct_sid(CODE_GLO_L1OF, orb_slot);
       lambda = sid_to_lambda(sid);
-      fail_unless((GPS_C / (GLO_L1_HZ +
-                            (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
-                                GLO_L1_DELTA_HZ)) == lambda,
-                  "Glonass L1 wavelength error");
+      fail_unless(
+          (GPS_C / (GLO_L1_HZ + (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
+                                    GLO_L1_DELTA_HZ)) == lambda,
+          "Glonass L1 wavelength error");
     }
   }
 }
