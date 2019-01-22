@@ -1186,14 +1186,8 @@ s8 calc_PVT(const u8 n_used,
       case GPS_L1CA_WHEN_POSSIBLE:
         /* use all the GPS L1CA codes (that are sorted first in nav_meas), and
          * after those enough observations to be able to do full RAIM */
-        if (CODE_GPS_L1CA == nav_meas[i].sid.code) {
-          use_this = true;
-        } else if (sats_used <= N_STATE + RAIM_MAX_EXCLUSIONS) {
-          gnss_sid_set_t new_sids_used = sids_used;
-          sid_set_add(&new_sids_used, nav_meas[i].sid);
-          use_this = (sid_set_get_sat_count(&new_sids_used) >
-                      sid_set_get_sat_count(&sids_used));
-        }
+        use_this = (CODE_GPS_L1CA == nav_meas[i].sid.code) ||
+                   (sats_used <= N_STATE + RAIM_MAX_EXCLUSIONS);
         break;
       case L1_ONLY:
         /* use all the available 1575.42 MHz codes */
