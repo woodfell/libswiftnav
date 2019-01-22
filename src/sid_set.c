@@ -32,6 +32,7 @@ void sid_set_init(gnss_sid_set_t *sid_set) {
  *
  */
 void sid_set_add(gnss_sid_set_t *sid_set, gnss_signal_t sid) {
+  assert(sid_valid(sid));
   u16 s = sid_to_code_index(sid);
   assert(s < 64);
   sid_set->sats[sid.code] |= ((u64)0x01 << s);
@@ -44,6 +45,7 @@ void sid_set_add(gnss_sid_set_t *sid_set, gnss_signal_t sid) {
  *
  */
 void sid_set_remove(gnss_sid_set_t *sid_set, gnss_signal_t sid) {
+  assert(sid_valid(sid));
   u16 s = sid_to_code_index(sid);
   assert(s < 64);
   sid_set->sats[sid.code] &= ~((u64)0x01 << s);
@@ -97,6 +99,7 @@ u32 sid_set_get_sig_count(const gnss_sid_set_t *sid_set) {
  *
  */
 bool sid_set_contains(const gnss_sid_set_t *sid_set, gnss_signal_t sid) {
+  assert(sid_valid(sid));
   u16 s = sid_to_code_index(sid);
   assert(s < 64);
   return sid_set->sats[sid.code] & ((u64)0x01 << s);

@@ -328,16 +328,11 @@ static bool almanac_xyz_equal(const almanac_xyz_t *a, const almanac_xyz_t *b) {
 
 static bool almanac_kepler_equal(const almanac_kepler_t *a,
                                  const almanac_kepler_t *b) {
-  return (a->m0 == b->m0) && (a->ecc == b->ecc) && (a->sqrta == b->sqrta) &&
-         (a->omega0 == b->omega0) && (a->omegadot == b->omegadot) &&
-         (a->w == b->w) && (a->inc == b->inc) && (a->af0 == b->af0) &&
-         (a->af1 == b->af1);
+  return memcmp(a, b, sizeof(*a)) == 0;
 }
 
 static bool almanac_glo_equal(const almanac_glo_t *a, const almanac_glo_t *b) {
-  return (a->lambda == b->lambda) && (a->t_lambda == b->t_lambda) &&
-         (a->i == b->i) && (a->t == b->t) && (a->t_dot == b->t_dot) &&
-         (a->epsilon == b->epsilon) && (a->omega == b->omega);
+  return memcmp(a, b, sizeof(*a)) == 0;
 }
 
 /** Are the two almanacs the same?
@@ -347,10 +342,10 @@ static bool almanac_glo_equal(const almanac_glo_t *a, const almanac_glo_t *b) {
  * \return true if they are equal
  */
 bool almanac_equal(const almanac_t *a, const almanac_t *b) {
-  if (!sid_is_equal(a->sid, b->sid) || (a->ura != b->ura) ||
+  if (!sid_is_equal(a->sid, b->sid) || fabs(a->ura - b->ura) > 1e-3 ||
       (a->fit_interval != b->fit_interval) || (a->valid != b->valid) ||
       (a->health_bits != b->health_bits) || (a->toa.wn != b->toa.wn) ||
-      (a->toa.tow != b->toa.tow))
+      fabs(a->toa.tow - b->toa.tow) > 1e-3)
     return false;
 
   switch (sid_to_constellation(a->sid)) {

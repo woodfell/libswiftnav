@@ -160,8 +160,7 @@ START_TEST(test_signal_properties) {
       {.sid = {.code = CODE_COUNT, .sat = 0}, .valid = false},
       {.sid = {.code = CODE_INVALID, .sat = 1}, .valid = false},
       {
-          .sid = {.code = CODE_GPS_L1CA, .sat = 0},
-          .valid = false,
+          .sid = {.code = CODE_GPS_L1CA, .sat = 0}, .valid = false,
       },
       {.sid = {.code = CODE_GPS_L1CA, .sat = 1},
        .valid = true,
@@ -185,8 +184,7 @@ START_TEST(test_signal_properties) {
        .str = "SBAS L1 138"},
       {.sid = {.code = CODE_SBAS_L1CA, .sat = 139}, .valid = false},
       {
-          .sid = {.code = CODE_GLO_L1OF, .sat = 0},
-          .valid = false,
+          .sid = {.code = CODE_GLO_L1OF, .sat = 0}, .valid = false,
       },
       {.sid = {.code = CODE_GLO_L1OF, .sat = 1},
        .valid = true,
@@ -196,8 +194,7 @@ START_TEST(test_signal_properties) {
        .str = "GLO L1OF 28"},
       {.sid = {.code = CODE_GLO_L1OF, .sat = 29}, .valid = false},
       {
-          .sid = {.code = CODE_GLO_L2OF, .sat = 0},
-          .valid = false,
+          .sid = {.code = CODE_GLO_L2OF, .sat = 0}, .valid = false,
       },
       {.sid = {.code = CODE_GLO_L2OF, .sat = 1},
        .valid = true,
@@ -361,11 +358,11 @@ START_TEST(test_signal_sid_to_carr_freq) {
   double carr_freq;
   gnss_signal_t sid = construct_sid(CODE_GPS_L2CM, GPS_FIRST_PRN);
   carr_freq = sid_to_carr_freq(sid);
-  fail_unless(GPS_L2_HZ == carr_freq, "L2 carr freq error");
+  fail_unless(fabs(GPS_L2_HZ - carr_freq) < 1e-3, "L2 carr freq error");
 
   sid = construct_sid(CODE_GPS_L1CA, GPS_FIRST_PRN);
   carr_freq = sid_to_carr_freq(sid);
-  fail_unless(GPS_L1_HZ == carr_freq, "L1 carr freq error");
+  fail_unless(fabs(GPS_L1_HZ - carr_freq) < 1e-3, "L1 carr freq error");
 
   /* check all GLO frequency and orbital slots */
   for (u16 sat = GLO_FIRST_PRN; sat <= NUM_SATS_GLO; sat++) {
@@ -376,16 +373,20 @@ START_TEST(test_signal_sid_to_carr_freq) {
       glo_map_set_slot_id(mesid, sat);
       sid = construct_sid(CODE_GLO_L2OF, sat);
       carr_freq = sid_to_carr_freq(sid);
-      fail_unless((GLO_L2_HZ + (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
-                                   GLO_L2_DELTA_HZ) == carr_freq,
-                  "Glonass L2 carrier error");
+      fail_unless(
+          fabs((GLO_L2_HZ +
+                (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) * GLO_L2_DELTA_HZ) -
+               carr_freq) < 1e-3,
+          "Glonass L2 carrier error");
       /* now L1 */
       mesid = construct_mesid(CODE_GLO_L1OF, fcn);
       sid = construct_sid(CODE_GLO_L1OF, sat);
       carr_freq = sid_to_carr_freq(sid);
-      fail_unless((GLO_L1_HZ + (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
-                                   GLO_L1_DELTA_HZ) == carr_freq,
-                  "Glonass L1 carrier error");
+      fail_unless(
+          fabs((GLO_L1_HZ +
+                (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) * GLO_L1_DELTA_HZ) -
+               carr_freq) < 1e-3,
+          "Glonass L1 carrier error");
     }
   }
 }
@@ -400,11 +401,13 @@ START_TEST(test_signal_sid_to_lambda) {
 
   gnss_signal_t sid = construct_sid(CODE_GPS_L2CM, GPS_FIRST_PRN);
   lambda = sid_to_lambda(sid);
-  fail_unless((GPS_C / GPS_L2_HZ) == lambda, "GPS L2 wavelength error");
+  fail_unless(fabs((GPS_C / GPS_L2_HZ) - lambda) < 1e-9,
+              "GPS L2 wavelength error");
 
   sid = construct_sid(CODE_GPS_L1CA, GPS_FIRST_PRN);
   lambda = sid_to_lambda(sid);
-  fail_unless((GPS_C / GPS_L1_HZ) == lambda, "GPS L1 wavelength error");
+  fail_unless(fabs((GPS_C / GPS_L1_HZ) - lambda) < 1e-9,
+              "GPS L1 wavelength error");
 
   /* check all GLO frequency and orbital slots */
   for (u16 orb_slot = GLO_FIRST_PRN; orb_slot <= NUM_SATS_GLO; orb_slot++) {
@@ -415,18 +418,20 @@ START_TEST(test_signal_sid_to_lambda) {
       glo_map_set_slot_id(mesid, orb_slot);
       sid = construct_sid(CODE_GLO_L2OF, orb_slot);
       lambda = sid_to_lambda(sid);
-      fail_unless(
-          (GPS_C / (GLO_L2_HZ + (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
-                                    GLO_L2_DELTA_HZ)) == lambda,
-          "Glonass L2 wavelength error");
+      fail_unless(fabs((GPS_C / (GLO_L2_HZ +
+                                 (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
+                                     GLO_L2_DELTA_HZ)) -
+                       lambda) < 1e-9,
+                  "Glonass L2 wavelength error");
       /* now L1 */
       mesid = construct_mesid(CODE_GLO_L1OF, fcn);
       sid = construct_sid(CODE_GLO_L1OF, orb_slot);
       lambda = sid_to_lambda(sid);
-      fail_unless(
-          (GPS_C / (GLO_L1_HZ + (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
-                                    GLO_L1_DELTA_HZ)) == lambda,
-          "Glonass L1 wavelength error");
+      fail_unless(fabs((GPS_C / (GLO_L1_HZ +
+                                 (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
+                                     GLO_L1_DELTA_HZ)) -
+                       lambda) < 1e-9,
+                  "Glonass L1 wavelength error");
     }
   }
 }
@@ -456,14 +461,15 @@ START_TEST(test_signal_code_to_chip_rate) {
   double chip_rate;
 
   chip_rate = code_to_chip_rate(CODE_GPS_L1CA);
-  fail_unless(GPS_CA_CHIPPING_RATE == chip_rate, "GPS_CA_CHIPPING_RATE error");
+  fail_unless(fabs(GPS_CA_CHIPPING_RATE - chip_rate) < 1e-3,
+              "GPS_CA_CHIPPING_RATE error");
 
   chip_rate = code_to_chip_rate(CODE_SBAS_L1CA);
-  fail_unless(GPS_CA_CHIPPING_RATE == chip_rate,
+  fail_unless(fabs(GPS_CA_CHIPPING_RATE - chip_rate) < 1e-3,
               "CODE_SBAS_L1CA chip rate error");
 
   chip_rate = code_to_chip_rate(CODE_GPS_L2CM);
-  fail_unless(GPS_CA_CHIPPING_RATE == chip_rate,
+  fail_unless(fabs(GPS_CA_CHIPPING_RATE - chip_rate) < 1e-3,
               "CODE_GPS_L2CM chip rate error");
 
   /* check unsupported branch for code coverage stats */
@@ -474,7 +480,7 @@ END_TEST
 START_TEST(test_signal_code_requires_direct_acq) {
   bool requires;
 
-  requires = code_to_chip_rate(CODE_GPS_L1CA);
+  requires = code_requires_direct_acq(CODE_GPS_L1CA);
   fail_unless(true == requires, "CODE_GPS_L1CA requires code_to_chip_rate");
 
   requires = code_requires_direct_acq(CODE_GPS_L2CM);

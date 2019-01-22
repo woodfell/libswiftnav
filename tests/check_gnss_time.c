@@ -120,7 +120,7 @@ void gmtime_test(const char *name, time_t start, time_t end, time_t step) {
                 date->tm_sec,
                 u.second_int,
                 asctime(date));
-    fail_unless(0.0 == u.second_frac,
+    fail_unless(fabs(u.second_frac) < 1e-16,
                 "%s, expected second_frac %f, got %f, time = %s",
                 name,
                 0.0,
@@ -192,7 +192,7 @@ START_TEST(test_gps_time_match_weeks) {
         i,
         testcases[i].t.wn,
         testcases[i].ret.wn);
-    fail_unless(testcases[i].t.tow == testcases[i].ret.tow,
+    fail_unless(fabs(testcases[i].t.tow - testcases[i].ret.tow) < 1e-9,
                 "gps_time_match_weeks test case %d failed, t.tow = %.12f, "
                 "ret.tow = %.12f",
                 i,
@@ -333,14 +333,14 @@ START_TEST(test_glo2gps) {
   for (size_t i = 0; i < sizeof(testcases) / sizeof(struct glo2gps_testcase);
        i++) {
     gps_time_t ret = glo2gps(&testcases[i].glot, /* utc_params = */ NULL);
-    fail_unless(
-        ret.wn == testcases[i].ret.wn && ret.tow == testcases[i].ret.tow,
-        "glo2gps test case %d failed, got (%d, %f), expected (%d, %f)",
-        i,
-        ret.wn,
-        ret.tow,
-        testcases[i].ret.wn,
-        testcases[i].ret.tow);
+    fail_unless(ret.wn == testcases[i].ret.wn &&
+                    fabs(ret.tow - testcases[i].ret.tow) < 1e-9,
+                "glo2gps test case %d failed, got (%d, %f), expected (%d, %f)",
+                i,
+                ret.wn,
+                ret.tow,
+                testcases[i].ret.wn,
+                testcases[i].ret.tow);
     if (gps_time_valid(&ret)) {
       /* convert back to GLO time */
       glo_time_t glo = gps2glo(&ret, NULL);
@@ -391,15 +391,16 @@ START_TEST(test_utc_offset) {
   for (size_t i = 0; i < sizeof(testcases) / sizeof(struct utc_offset_testcase);
        i++) {
     double dUTC = get_gps_utc_offset(&testcases[i].t, NULL);
-    double is_lse = is_leap_second_event(&testcases[i].t, NULL);
+    bool is_lse = is_leap_second_event(&testcases[i].t, NULL);
 
-    fail_unless(dUTC == testcases[i].dUTC && is_lse == testcases[i].is_lse,
-                "utc_leap_testcase %d failed, expected (%f,%d) got (%f,%d)",
-                i,
-                testcases[i].dUTC,
-                testcases[i].is_lse,
-                dUTC,
-                is_lse);
+    fail_unless(
+        fabs(dUTC - testcases[i].dUTC) < 1e-9 && is_lse == testcases[i].is_lse,
+        "utc_leap_testcase %d failed, expected (%f,%d) got (%f,%d)",
+        i,
+        testcases[i].dUTC,
+        testcases[i].is_lse,
+        dUTC,
+        is_lse);
 
     /* check that offset from the resulting UTC time back to GPS time matches,
      * except during the leap second event when the UTC time is ambiguous */
@@ -407,7 +408,7 @@ START_TEST(test_utc_offset) {
       gps_time_t utc_time = {.wn = testcases[i].t.wn,
                              .tow = testcases[i].t.tow - dUTC};
       double dGPS = get_utc_gps_offset(&utc_time, NULL);
-      fail_unless(dGPS == -testcases[i].dUTC,
+      fail_unless(fabs(dGPS + testcases[i].dUTC) < 1e-9,
                   "utc_leap_testcase inverse %d failed, expected %f got %f",
                   i,
                   -testcases[i].dUTC,

@@ -497,15 +497,17 @@ START_TEST(test_disable_pvt_velocity) {
   fail_unless(
       code >= 0, "Return code should be >=0 (success). Saw: %d\n", code);
   fail_unless(soln.valid == 1, "Solution should be valid!");
-  fail_unless((soln.vel_ned[0] == 0.0) && (soln.vel_ned[1] == 0.0) &&
-                  (soln.vel_ned[2] == 0.0),
+  fail_unless(fabs(soln.vel_ned[0] - 0.0) < 1e-16 &&
+                  fabs(soln.vel_ned[1] - 0.0) < 1e-16 &&
+                  fabs(soln.vel_ned[2] - 0.0) < 1e-16,
               "Velocity NED was not zero.  "
               "Saw: %.5f, %.5f, %.5f\n",
               soln.vel_ned[0],
               soln.vel_ned[1],
               soln.vel_ned[2]);
-  fail_unless((soln.vel_ecef[0] == 0.0) && (soln.vel_ecef[1] == 0.0) &&
-                  (soln.vel_ecef[2] == 0.0),
+  fail_unless(fabs(soln.vel_ecef[0] - 0.0) < 1e-16 &&
+                  fabs(soln.vel_ecef[1] - 0.0) < 1e-16 &&
+                  fabs(soln.vel_ecef[2] - 0.0) < 1e-16,
               "Velocity ECEF was not zero.  "
               "Saw: %.5f, %.5f, %.5f\n",
               soln.vel_ecef[0],

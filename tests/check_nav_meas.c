@@ -73,55 +73,70 @@ START_TEST(test_decode_lock_time) {
   double ret;
 
   ret = decode_lock_time(0);
-  fail_unless(ret == 0.0, "Incorrect return (%f vs %f)", ret, 0.0);
+  fail_unless(fabs(ret - 0.0) < 1e-9, "Incorrect return (%f vs %f)", ret, 0.0);
 
   ret = decode_lock_time(0xF0);
-  fail_unless(ret == 0.0, "Incorrect return (%f vs %f)", ret, 0.0);
+  fail_unless(fabs(ret - 0.0) < 1e-9, "Incorrect return (%f vs %f)", ret, 0.0);
 
   ret = decode_lock_time(1);
-  fail_unless(ret == 0.032, "Incorrect return (%f vs %f)", ret, 0.032);
+  fail_unless(
+      fabs(ret - 0.032) < 1e-9, "Incorrect return (%f vs %f)", ret, 0.032);
 
   ret = decode_lock_time(2);
-  fail_unless(ret == 0.064, "Incorrect return (%f vs %f)", ret, 0.064);
+  fail_unless(
+      fabs(ret - 0.064) < 1e-9, "Incorrect return (%f vs %f)", ret, 0.064);
 
   ret = decode_lock_time(3);
-  fail_unless(ret == 0.128, "Incorrect return (%f vs %f)", ret, 0.128);
+  fail_unless(
+      fabs(ret - 0.128) < 1e-9, "Incorrect return (%f vs %f)", ret, 0.128);
 
   ret = decode_lock_time(4);
-  fail_unless(ret == 0.256, "Incorrect return (%f vs %f)", ret, 0.256);
+  fail_unless(
+      fabs(ret - 0.256) < 1e-9, "Incorrect return (%f vs %f)", ret, 0.256);
 
   ret = decode_lock_time(5);
-  fail_unless(ret == 0.512, "Incorrect return (%f vs %f)", ret, 0.512);
+  fail_unless(
+      fabs(ret - 0.512) < 1e-9, "Incorrect return (%f vs %f)", ret, 0.512);
 
   ret = decode_lock_time(6);
-  fail_unless(ret == 1.024, "Incorrect return (%f vs %f)", ret, 1.024);
+  fail_unless(
+      fabs(ret - 1.024) < 1e-9, "Incorrect return (%f vs %f)", ret, 1.024);
 
   ret = decode_lock_time(7);
-  fail_unless(ret == 2.048, "Incorrect return (%f vs %f)", ret, 2.048);
+  fail_unless(
+      fabs(ret - 2.048) < 1e-9, "Incorrect return (%f vs %f)", ret, 2.048);
 
   ret = decode_lock_time(8);
-  fail_unless(ret == 4.096, "Incorrect return (%f vs %f)", ret, 4.096);
+  fail_unless(
+      fabs(ret - 4.096) < 1e-9, "Incorrect return (%f vs %f)", ret, 4.096);
 
   ret = decode_lock_time(9);
-  fail_unless(ret == 8.192, "Incorrect return (%f vs %f)", ret, 8.192);
+  fail_unless(
+      fabs(ret - 8.192) < 1e-9, "Incorrect return (%f vs %f)", ret, 8.192);
 
   ret = decode_lock_time(10);
-  fail_unless(ret == 16.384, "Incorrect return (%f vs %f)", ret, 16.384);
+  fail_unless(
+      fabs(ret - 16.384) < 1e-9, "Incorrect return (%f vs %f)", ret, 16.384);
 
   ret = decode_lock_time(11);
-  fail_unless(ret == 32.768, "Incorrect return (%f vs %f)", ret, 32.768);
+  fail_unless(
+      fabs(ret - 32.768) < 1e-9, "Incorrect return (%f vs %f)", ret, 32.768);
 
   ret = decode_lock_time(12);
-  fail_unless(ret == 65.536, "Incorrect return (%f vs %f)", ret, 65.536);
+  fail_unless(
+      fabs(ret - 65.536) < 1e-9, "Incorrect return (%f vs %f)", ret, 65.536);
 
   ret = decode_lock_time(13);
-  fail_unless(ret == 131.072, "Incorrect return (%f vs %f)", ret, 131.072);
+  fail_unless(
+      fabs(ret - 131.072) < 1e-9, "Incorrect return (%f vs %f)", ret, 131.072);
 
   ret = decode_lock_time(14);
-  fail_unless(ret == 262.144, "Incorrect return (%f vs %f)", ret, 262.144);
+  fail_unless(
+      fabs(ret - 262.144) < 1e-9, "Incorrect return (%f vs %f)", ret, 262.144);
 
   ret = decode_lock_time(15);
-  fail_unless(ret == 524.288, "Incorrect return (%f vs %f)", ret, 524.288);
+  fail_unless(
+      fabs(ret - 524.288) < 1e-9, "Incorrect return (%f vs %f)", ret, 524.288);
 }
 END_TEST
 
@@ -138,7 +153,7 @@ START_TEST(test_roundtrip_lock_time) {
               encoded_value,
               13);
 
-  fail_unless(decoded_value == 131.072,
+  fail_unless(fabs(decoded_value - 131.072) < 1e-9,
               "Incorrect return (%f vs %f)",
               decoded_value,
               131.072);

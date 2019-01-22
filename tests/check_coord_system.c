@@ -52,7 +52,7 @@ START_TEST(test_llhdeg2rad) {
 
   // We expect the zero-point to be the same in degrees and radians
   for (int n = 0; n < 3; n++) {
-    fail_unless(rads[n] == 0);
+    fail_unless(fabs(rads[n]) < 1e-16);
   }
 
   // We expect an arbitrary point to convert correctly
@@ -61,7 +61,7 @@ START_TEST(test_llhdeg2rad) {
 
   fail_unless(fabs(rads[0] - 0.659381970558) < MAX_ANGLE_ERROR_RAD);
   fail_unless(fabs(rads[1] + 2.136139032231) < MAX_ANGLE_ERROR_RAD);
-  fail_unless(rads[2] == swiftHomeLLH[2]);
+  fail_unless(fabs(rads[2] - swiftHomeLLH[2]) < 1e-16);
 }
 END_TEST
 

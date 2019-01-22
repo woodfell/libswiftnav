@@ -11,6 +11,7 @@
  */
 
 #include <assert.h>
+#include <float.h>
 #include <inttypes.h>
 #include <math.h>
 #include <stdlib.h>
@@ -58,6 +59,14 @@ static inline s32 sign_extend14(u32 arg) {
  */
 static inline s32 sign_extend22(u32 arg) {
   return BITS_SIGN_EXTEND_32(22, arg);
+}
+
+static bool equalf(float a, float b) {
+  return fabsf(a - b) <= FLT_EPSILON * MAX(fabsf(a), fabsf(b));
+}
+
+static bool equald(double a, double b) {
+  return fabs(a - b) <= DBL_EPSILON * MAX(fabs(a), fabs(b));
 }
 
 /**
@@ -206,12 +215,12 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
     return -1;
   }
 
-  *clock_err = -e->glo.tau + e->glo.gamma * dt - tgd;
-  *clock_rate_err = e->glo.gamma;
+  *clock_err = -(-e->glo.tau + e->glo.gamma * dt - tgd);
+  *clock_rate_err = -e->glo.gamma;
 
   dt -= *clock_err;
 
-  u32 num_steps = ceil(fabs(dt) / GLO_MAX_STEP_LENGTH);
+  u32 num_steps = (u32)ceil(fabs(dt) / GLO_MAX_STEP_LENGTH);
   num_steps = MIN(num_steps, GLO_MAX_STEP_NUM);
 
   double ecef_vel_acc[6];
@@ -714,11 +723,11 @@ s8 calc_sat_doppler(const ephemeris_t *e,
    to be as close as possible. */
 static void fake_gps_wns(gps_time_t *t1, gps_time_t *t2) {
   assert(t1);
-  assert(t1->tow != TOW_UNKNOWN);
+  assert(t1->tow >= 0);
   assert((WN_UNKNOWN == t1->wn) || (t1->wn > 1));
 
   assert(t2);
-  assert(t2->tow != TOW_UNKNOWN);
+  assert(t2->tow >= 0);
   assert((WN_UNKNOWN == t2->wn) || (t2->wn > 1));
 
   if ((WN_UNKNOWN != t1->wn) && (WN_UNKNOWN != t2->wn)) {
@@ -846,22 +855,22 @@ u8 ephemeris_params_valid(const gps_time_t *bgn,
 #define URA_VALUE_TABLE_LEN 16
 
 static const float gps_ura_values[URA_VALUE_TABLE_LEN] = {
-    [0] = 2.0f,
-    [1] = 2.8f,
-    [2] = 4.0f,
-    [3] = 5.7f,
-    [4] = 8.0f,
-    [5] = 11.3f,
-    [6] = 16.0f,
-    [7] = 32.0f,
-    [8] = 64.0f,
-    [9] = 128.0f,
-    [10] = 256.0f,
-    [11] = 512.0f,
-    [12] = 1024.0f,
-    [13] = 2048.0f,
-    [14] = 4096.0f,
-    [15] = 6144.0f,
+        [0] = 2.0f,
+        [1] = 2.8f,
+        [2] = 4.0f,
+        [3] = 5.7f,
+        [4] = 8.0f,
+        [5] = 11.3f,
+        [6] = 16.0f,
+        [7] = 32.0f,
+        [8] = 64.0f,
+        [9] = 128.0f,
+        [10] = 256.0f,
+        [11] = 512.0f,
+        [12] = 1024.0f,
+        [13] = 2048.0f,
+        [14] = 4096.0f,
+        [15] = 6144.0f,
 };
 
 /** Convert a GPS URA index into a value.
@@ -1120,15 +1129,15 @@ static bool tgd_equal(const ephemeris_kepler_t *a,
   bool eq = false;
   constellation_t con = code_to_constellation(code);
   if (CONSTELLATION_GPS == con) {
-    eq = (a->tgd_gps_s == b->tgd_gps_s);
+    eq = equald(a->tgd_gps_s, b->tgd_gps_s);
   } else if (CONSTELLATION_QZS == con) {
-    eq = (a->tgd_qzss_s == b->tgd_qzss_s);
+    eq = equald(a->tgd_qzss_s, b->tgd_qzss_s);
   } else if (CONSTELLATION_BDS == con) {
-    eq = ((a->tgd_bds_s[0] == b->tgd_bds_s[0]) &&
-          (a->tgd_bds_s[1] == b->tgd_bds_s[1]));
+    eq = equald(a->tgd_bds_s[0], b->tgd_bds_s[0]) &&
+         equald(a->tgd_bds_s[1], b->tgd_bds_s[1]);
   } else if (CONSTELLATION_GAL == con) {
-    eq = ((a->tgd_gal_s[0] == b->tgd_gal_s[0]) &&
-          (a->tgd_gal_s[1] == b->tgd_gal_s[1]));
+    eq = (equald(a->tgd_gal_s[0], b->tgd_gal_s[0]) &&
+          equald(a->tgd_gal_s[1], b->tgd_gal_s[1]));
   } else {
     assert(!"Unsupported Keplerian constellation");
     return false;
@@ -1138,7 +1147,7 @@ static bool tgd_equal(const ephemeris_kepler_t *a,
 
 static bool ephemeris_xyz_equal(const ephemeris_xyz_t *a,
                                 const ephemeris_xyz_t *b) {
-  return (a->a_gf0 == b->a_gf0) && (a->a_gf1 == b->a_gf1) &&
+  return equald(a->a_gf0, b->a_gf0) && equald(a->a_gf1, b->a_gf1) &&
          (memcmp(a->pos, b->pos, sizeof(a->pos)) == 0) &&
          (memcmp(a->vel, b->vel, sizeof(a->vel)) == 0) &&
          (memcmp(a->acc, b->acc, sizeof(a->acc)) == 0);
@@ -1148,21 +1157,24 @@ static bool ephemeris_kepler_equal(const ephemeris_kepler_t *a,
                                    const ephemeris_kepler_t *b,
                                    const code_t code) {
   return (a->iodc == b->iodc) && (a->iode == b->iode) &&
-         tgd_equal(a, b, code) && (a->crs == b->crs) && (a->crc == b->crc) &&
-         (a->cuc == b->cuc) && (a->cus == b->cus) && (a->cic == b->cic) &&
-         (a->cis == b->cis) && (a->dn == b->dn) && (a->m0 == b->m0) &&
-         (a->ecc == b->ecc) && (a->sqrta == b->sqrta) &&
-         (a->omega0 == b->omega0) && (a->omegadot == b->omegadot) &&
-         (a->w == b->w) && (a->inc == b->inc) && (a->inc_dot == b->inc_dot) &&
-         (a->af0 == b->af0) && (a->af1 == b->af1) && (a->af2 == b->af2) &&
-         (a->toc.wn == b->toc.wn) && (a->toc.tow == b->toc.tow);
+         tgd_equal(a, b, code) && equald(a->crs, b->crs) &&
+         equald(a->crc, b->crc) && equald(a->cuc, b->cuc) &&
+         equald(a->cus, b->cus) && equald(a->cic, b->cic) &&
+         equald(a->cis, b->cis) && equald(a->dn, b->dn) &&
+         equald(a->m0, b->m0) && equald(a->ecc, b->ecc) &&
+         equald(a->sqrta, b->sqrta) && equald(a->omega0, b->omega0) &&
+         equald(a->omegadot, b->omegadot) && equald(a->w, b->w) &&
+         equald(a->inc, b->inc) && equald(a->inc_dot, b->inc_dot) &&
+         equald(a->af0, b->af0) && equald(a->af1, b->af1) &&
+         equald(a->af2, b->af2) && (a->toc.wn == b->toc.wn) &&
+         equald(a->toc.tow, b->toc.tow);
 }
 
 static bool ephemeris_glo_equal(const ephemeris_glo_t *a,
                                 const ephemeris_glo_t *b) {
-  return (a->gamma == b->gamma) && (a->tau == b->tau) &&
-         (a->d_tau == b->d_tau) && (a->iod == b->iod) && (a->fcn == b->fcn) &&
-         (memcmp(a->pos, b->pos, sizeof(a->pos)) == 0) &&
+  return equald(a->gamma, b->gamma) && equald(a->tau, b->tau) &&
+         equald(a->d_tau, b->d_tau) && (a->iod == b->iod) &&
+         (a->fcn == b->fcn) && (memcmp(a->pos, b->pos, sizeof(a->pos)) == 0) &&
          (memcmp(a->vel, b->vel, sizeof(a->vel)) == 0) &&
          (memcmp(a->acc, b->acc, sizeof(a->acc)) == 0);
 }
@@ -1174,10 +1186,10 @@ static bool ephemeris_glo_equal(const ephemeris_glo_t *a,
  * \return true if they are equal
  */
 bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b) {
-  if (!sid_is_equal(a->sid, b->sid) || (a->ura != b->ura) ||
+  if (!sid_is_equal(a->sid, b->sid) || !equalf(a->ura, b->ura) ||
       (a->fit_interval != b->fit_interval) || (a->valid != b->valid) ||
       (a->health_bits != b->health_bits) || (a->toe.wn != b->toe.wn) ||
-      (a->toe.tow != b->toe.tow))
+      !equald(a->toe.tow, b->toe.tow))
     return false;
 
   switch (sid_to_constellation(a->sid)) {
@@ -1268,84 +1280,87 @@ static u32 get_iodcrc(const ephemeris_t *eph) {
   setbits(buffer,
           numbits,
           14,
-          eph->kepler.inc_dot / M_PI * (double)(1 << 30) * (double)(1 << 13));
+          (s32)(eph->kepler.inc_dot / M_PI * (double)(1 << 30) *
+                (double)(1 << 13)));
   numbits += 14;
   setbits(buffer,
           numbits,
           11,
-          eph->kepler.af2 * (double)(1 << 30) * (double)(1 << 30) *
-              (double)(1 << 6));
+          (s32)(eph->kepler.af2 * (double)(1 << 30) * (double)(1 << 30) *
+                (double)(1 << 6)));
   numbits += 11;
   setbits(buffer,
           numbits,
           22,
-          eph->kepler.af1 * (double)(1 << 30) * (double)(1 << 20));
+          (s32)(eph->kepler.af1 * (double)(1 << 30) * (double)(1 << 20)));
   numbits += 22;
   setbits(buffer,
           numbits,
           24,
-          eph->kepler.af0 * (double)(1 << 30) * (double)(1 << 3));
+          (s32)(eph->kepler.af0 * (double)(1 << 30) * (double)(1 << 3)));
   numbits += 24;
-  setbits(buffer, numbits, 18, eph->kepler.crs * (double)(1 << 6));
+  setbits(buffer, numbits, 18, (s32)(eph->kepler.crs * (double)(1 << 6)));
   numbits += 18;
   setbits(buffer,
           numbits,
           16,
-          eph->kepler.dn / M_PI * (double)(1 << 30) * (double)(1 << 13));
+          (s32)(eph->kepler.dn / M_PI * (double)(1 << 30) * (double)(1 << 13)));
   numbits += 16;
   setbits(buffer,
           numbits,
           32,
-          eph->kepler.m0 / M_PI * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.m0 / M_PI * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 32;
   setbits(buffer,
           numbits,
           18,
-          eph->kepler.cuc * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.cuc * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 18;
   setbitu(buffer,
           numbits,
           32,
-          eph->kepler.ecc * (double)(1 << 30) * (double)(1 << 3));
+          (u32)(eph->kepler.ecc * (double)(1 << 30) * (double)(1 << 3)));
   numbits += 32;
   setbits(buffer,
           numbits,
           18,
-          eph->kepler.cus * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.cus * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 18;
-  setbitu(buffer, numbits, 32, eph->kepler.sqrta * (double)(1 << 19));
+  setbitu(buffer, numbits, 32, (u32)(eph->kepler.sqrta * (double)(1 << 19)));
   numbits += 32;
   setbits(buffer,
           numbits,
           18,
-          eph->kepler.cic * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.cic * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 18;
-  setbits(buffer,
-          numbits,
-          32,
-          eph->kepler.omega0 / M_PI * (double)(1 << 30) * (double)(1 << 1));
+  setbits(
+      buffer,
+      numbits,
+      32,
+      (s32)(eph->kepler.omega0 / M_PI * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 32;
   setbits(buffer,
           numbits,
           18,
-          eph->kepler.cis * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.cis * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 18;
   setbits(buffer,
           numbits,
           32,
-          eph->kepler.inc / M_PI * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.inc / M_PI * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 32;
-  setbits(buffer, numbits, 18, eph->kepler.crc * (double)(1 << 6));
+  setbits(buffer, numbits, 18, (s32)(eph->kepler.crc * (double)(1 << 6)));
   numbits += 18;
   setbits(buffer,
           numbits,
           32,
-          eph->kepler.w / M_PI * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.w / M_PI * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 32;
   setbits(buffer,
           numbits,
           24,
-          eph->kepler.omegadot / M_PI * (double)(1 << 30) * (double)(1 << 13));
+          (s32)(eph->kepler.omegadot / M_PI * (double)(1 << 30) *
+                (double)(1 << 13)));
   numbits += 24;
   setbits(buffer, numbits, 5, 0);
   numbits += 5;
@@ -1417,7 +1432,7 @@ s8 get_tgd_correction(const ephemeris_t *eph,
         *tgd = 0.0;
         return 0;
       } else if (CODE_GLO_L2OF == sid->code || CODE_GLO_L2P == sid->code) {
-        *tgd = eph->glo.d_tau;
+        *tgd = -eph->glo.d_tau;
         return 0;
       } else {
         log_debug_sid(*sid, "TGD not applied for the signal");

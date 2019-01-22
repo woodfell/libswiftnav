@@ -466,7 +466,7 @@ static s8 pvt_solve(const u8 n_used,
     /* Construct the weight matrix. Ideally it would have the inverses of
      * individual measurement variances on the diagonal
      */
-    if (0 != pseudorange_var) {
+    if (fabs(pseudorange_var) > 1e-16) {
       w[j] = 1.0 / pseudorange_var;
     } else {
       w[j] = 1.0;
@@ -590,8 +590,9 @@ static bool residual_test(const u8 n_used,
                           const lsq_data_t *lsq_data,
                           const navigation_measurement_t *nav_meas[n_used],
                           double *p_metric) {
-  if (lsq_data->rx_state[0] == 0.0 && lsq_data->rx_state[1] == 0.0 &&
-      lsq_data->rx_state[2] == 0.0) {
+  if (fabs(lsq_data->rx_state[0]) < 1e-16 &&
+      fabs(lsq_data->rx_state[1]) < 1e-16 &&
+      fabs(lsq_data->rx_state[2]) < 1e-16) {
     /* State un-initialized */
     return false;
   }
@@ -625,10 +626,10 @@ static bool residual_test(const u8 n_used,
       residual[n_used + i] = lsq_data->omp_doppler[i];
     }
     calc_measurement_noises(nav_meas[i], &pr_var, &dop_var);
-    if (pr_var != 0) {
+    if (pr_var > 0) {
       residual[i] /= sqrt(pr_var);
     }
-    if (!disable_velocity && (dop_var != 0)) {
+    if (!disable_velocity && (dop_var > 0)) {
       residual[n_used + i] /= sqrt(dop_var);
     }
   }

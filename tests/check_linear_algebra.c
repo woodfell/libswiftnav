@@ -161,9 +161,11 @@ START_TEST(test_matrix_eye) {
   for (u32 i = 0; i < 10; i++) {
     for (u32 j = 0; j < 10; j++) {
       if (i == j) {
-        fail_unless(M[i][j] == 1, "Identity diagonal element != 1");
+        fail_unless(fabs(M[i][j] - 1) < LINALG_TOL,
+                    "Identity diagonal element != 1");
       } else {
-        fail_unless(M[i][j] == 0, "Identity off-diagonal element != 0");
+        fail_unless(fabs(M[i][j] - 0) < LINALG_TOL,
+                    "Identity off-diagonal element != 0");
       }
     }
   }
@@ -180,7 +182,8 @@ START_TEST(test_matrix_triu) {
 
   for (u32 i = 0; i < 4; i++) {
     for (u32 j = 0; j < 4; j++) {
-      fail_unless(M[i][j] == M_[i][j], "triu result != test matrix");
+      fail_unless(fabs(M[i][j] - M_[i][j]) < LINALG_TOL,
+                  "triu result != test matrix");
     }
   }
 }
@@ -203,11 +206,12 @@ START_TEST(test_matrix_udu_1) {
 
   for (u32 i = 0; i < 4; i++) {
     for (u32 j = 0; j < 4; j++) {
-      fail_unless(U[i][j] == U_[i][j], "U result != test matrix");
+      fail_unless(fabs(U[i][j] - U_[i][j]) < LINALG_TOL,
+                  "U result != test matrix");
     }
   }
   for (u32 i = 0; i < 4; i++) {
-    fail_unless(D[i] == D_[i], "D result != test D");
+    fail_unless(fabs(D[i] - D_[i]) < LINALG_TOL, "D result != test D");
   }
 }
 END_TEST
@@ -268,9 +272,7 @@ END_TEST
 
 START_TEST(test_matrix_udu_3) {
   double M[3][3] = {
-      {36, 49, 9},
-      {49, 77, 15},
-      {9, 15, 3},
+      {36, 49, 9}, {49, 77, 15}, {9, 15, 3},
   };
 
   double U[3][3] = {{0}};
@@ -279,15 +281,17 @@ START_TEST(test_matrix_udu_3) {
   matrix_udu(3, (double *)M, (double *)U, D);
 
   /* Check using formula for 3x3 matrix on Gibbs p. 393 */
-  fail_unless(D[2] == M[2][2], "D[2] incorrect");
-  fail_unless(U[2][1] == M[2][1] / D[2], "U[2][1] incorrect");
-  fail_unless(U[2][0] == M[2][0] / D[2], "U[2][0] incorrect");
-  fail_unless(D[1] == (M[1][1] - U[2][1] * U[2][1] * D[2]), "D[1] incorrect");
-  fail_unless(U[1][0] == ((M[1][0] - U[2][0] * U[2][1] * D[2]) / D[1]),
+  fail_unless(fabs(D[2] - M[2][2]) < LINALG_TOL, "D[2] incorrect");
+  fail_unless(fabs(U[2][1] - M[2][1] / D[2]) < LINALG_TOL, "U[2][1] incorrect");
+  fail_unless(fabs(U[2][0] - M[2][0] / D[2]) < LINALG_TOL, "U[2][0] incorrect");
+  fail_unless(fabs(D[1] - (M[1][1] - U[2][1] * U[2][1] * D[2])) < LINALG_TOL,
+              "D[1] incorrect");
+  fail_unless(fabs(U[1][0] - ((M[1][0] - U[2][0] * U[2][1] * D[2]) / D[1])) <
+                  LINALG_TOL,
               "U[1][0] incorrect");
-  fail_unless(
-      D[0] == (M[0][0] - U[1][0] * U[1][0] * D[1] - U[2][0] * U[2][0] * D[2]),
-      "D[0] incorrect");
+  fail_unless(fabs(D[0] - (M[0][0] - U[1][0] * U[1][0] * D[1] -
+                           U[2][0] * U[2][0] * D[2])) < LINALG_TOL,
+              "D[0] incorrect");
 }
 END_TEST
 
@@ -307,7 +311,8 @@ START_TEST(test_matrix_reconstruct_udu) {
 
   for (u32 i = 0; i < 4; i++) {
     for (u32 j = 0; j < 4; j++) {
-      fail_unless(M[i][j] == M_[i][j], "reconstructed result != test matrix");
+      fail_unless(fabs(M[i][j] - M_[i][j]) < LINALG_TOL,
+                  "reconstructed result != test matrix");
     }
   }
 }
@@ -659,7 +664,7 @@ START_TEST(test_submatrix) {
   submatrix(2, 2, 3, A, row_map, col_map, A2);
 
   for (u8 i = 0; i < 2 * 2; i++) {
-    fail_unless(answer[i] == A2[i]);
+    fail_unless(fabs(answer[i] - A2[i]) < LINALG_TOL);
   }
 }
 END_TEST
