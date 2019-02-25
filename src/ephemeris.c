@@ -1491,11 +1491,9 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       if (CODE_BDS2_B1 == sid->code) {
         *tgd = eph->kepler.tgd.bds_s[0];
         return 0;
-      } else if (CODE_BDS2_B2 == sid->code) {
+      } else {
         *tgd = eph->kepler.tgd.bds_s[1];
         return 0;
-      } else {
-        log_debug_sid(*sid, "TGD not applied for the signal");
       }
       return -1;
     case CONSTELLATION_GLO:
