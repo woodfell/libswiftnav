@@ -38,8 +38,7 @@ extern "C" {
 #define NUM_SATS_QZS 10
 
 #define NUM_SATS                                                               \
-  (NUM_SATS_GPS + NUM_SATS_SBAS + NUM_SATS_GLO + NUM_SATS_BDS + NUM_SATS_QZS + \
-   NUM_SATS_GAL)
+  (NUM_SATS_GPS + NUM_SATS_GAL)
 
 #define MAX_NUM_SATS         \
   (MAX(NUM_SATS_GPS,         \

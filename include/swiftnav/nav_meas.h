@@ -87,8 +87,8 @@ typedef struct {
   double sat_clock_err;        /**< SV clock error [s] */
   double sat_clock_err_rate;   /**< SV clock error rate [s/s] */
   u16 IODC;                    /**< Issue of Data Clock [unitless] */
-  double cn0;                  /**< Carrier to noise ratio [dB-Hz] */
-  double lock_time;            /**< PLL lock time [s] */
+  float cn0;                  /**< Carrier to noise ratio [dB-Hz] */
+  float lock_time;            /**< PLL lock time [s] */
   double elevation;            /**< Approximate satellite elevation [deg] */
   gps_time_t tot;              /**< Time of transmit */
   gnss_signal_t sid;           /**< SV signal identifier */
