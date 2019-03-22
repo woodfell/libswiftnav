@@ -63,8 +63,8 @@ set(SRCS
 add_library(swiftnav ${HDRS} ${SRCS})
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(swiftnav PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-install(FILES ${HDRS} DESTINATION include/swiftnav)
-install(TARGETS swiftnav DESTINATION lib)
+install(FILES ${HDRS} DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/swiftnav)
+install(TARGETS swiftnav DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 
 target_compile_options(swiftnav PRIVATE "-Werror")
 target_compile_options(swiftnav PRIVATE "-Wmissing-prototypes")
