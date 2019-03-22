@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
 project(libswiftnav)
 
+if(NOT CMAKE_INSTALL_FULL_BINDIR)
+  include(GNUInstallDirs)
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
 include(FindCheck)
 
